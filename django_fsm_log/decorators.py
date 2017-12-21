@@ -1,26 +1,17 @@
 from functools import wraps
 
 
-def fsm_log_by(func):
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        arg_list = list(args)
-        instance = arg_list.pop(0)
-
-        if kwargs.get('by', False):
-            instance.by = kwargs['by']
+def fsm_log_by(by_field_name=False, description_field_name=False):
+    def inner_transition(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            kwargs['django_fsm_log_keys'] = {}
+            kwargs['django_fsm_log_keys']['by_field_name'] = by_field_name
+            kwargs['django_fsm_log_keys']['description_field_name'] = description_field_name
             
-        if kwargs.get('description', False):
-            instance.description = kwargs['description']
+            out = func(instance, *args, **kwargs)
 
-        out = func(instance, *arg_list, **kwargs)
+            return out
 
-        if kwargs.get('by', False):
-            delattr(instance, 'by')
-
-        if kwargs.get('description', False):
-            delattr(instance, 'description')
-
-        return out
-
-    return wrapped
+        return wrapped
+    return inner_transition

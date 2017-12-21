@@ -19,6 +19,7 @@ def create_kwargs(user, article):
         'by': user,
         'state': 'submitted',
         'transition': 'submit',
+        'django_fsm_log_description': 'Submitted to approval',
         'content_object': article
     }
 
@@ -55,6 +56,16 @@ def test_create_returns_correct_state_log(mocker, create_kwargs):
     assert log.transition == create_kwargs['transition']
     assert log.content_object == create_kwargs['content_object']
     assert log.by == create_kwargs['by']
+
+
+@pytest.mark.pending_objects
+def test_create_state_log_return_description(mocker, create_kwargs):
+    mocker.patch('django_fsm_log.managers.cache')
+    log = StateLog.pending_objects.create(**create_kwargs)
+    assert log.state, create_kwargs['state']
+    assert log.transition, create_kwargs['transition']
+    assert log.by, create_kwargs['by']
+    assert log.description, create_kwargs['django_fsm_log_description']
 
 
 @pytest.mark.pending_objects

@@ -31,15 +31,24 @@ class CachedBackend(object):
     @staticmethod
     def pre_transition_callback(sender, instance, name, source, target, **kwargs):
         from .models import StateLog
+        
+        method_kwargs = kwargs['method_kwargs']
+        django_fsm_log_keys = method_kwargs['django_fsm_log_keys']
+        
+        by=getattr(django_fsm_log_keys, 'by_field_name', None),
+        by = method_kwargs[by] if by else instance,
+
+        description=getattr(django_fsm_log_keys, 'description_field_name', None),
+        description = method_kwargs[description] if description else None
 
         if BaseBackend._get_model_qualified_name__(sender) in settings.DJANGO_FSM_LOG_IGNORED_MODELS:
             return
 
         StateLog.pending_objects.create(
-            by=getattr(instance, 'by', None),
+            by=by,
             state=target,
             transition=name,
-            description=getattr(instance, 'description', None),
+            description=description,
             content_object=instance,
         )
 
@@ -63,14 +72,23 @@ class SimpleBackend(object):
     def post_transition_callback(sender, instance, name, source, target, **kwargs):
         from .models import StateLog
 
+        method_kwargs = kwargs['method_kwargs']
+        django_fsm_log_keys = method_kwargs['django_fsm_log_keys']
+        
+        by=getattr(django_fsm_log_keys, 'by_field_name', None),
+        by = method_kwargs[by] if by else instance,
+
+        description=getattr(django_fsm_log_keys, 'description_field_name', None),
+        description = method_kwargs[description] if description else None
+
         if BaseBackend._get_model_qualified_name__(sender) in settings.DJANGO_FSM_LOG_IGNORED_MODELS:
             return
 
         StateLog.objects.create(
-            by=getattr(instance, 'by', None),
+            by=by,
             state=target,
             transition=name,
-            description=getattr(instance, 'description', None),
+            description=description,
             content_object=instance,
         )
 

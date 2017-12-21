@@ -5,6 +5,10 @@ local_settings.py
 .tox/
 .coverage
 
+.python-version
+.vscode/
+djangofsmlog/
+
 build/
 dist/
 *.egg-info
